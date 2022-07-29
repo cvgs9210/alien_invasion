@@ -1,8 +1,8 @@
 import sys
-
 import pygame
 
 from settings import Settings
+from ship import Ship
 
 class AlienInvasion:
     """Clase general para gestionar los recursos y el comportammiento del juego."""
@@ -15,6 +15,8 @@ class AlienInvasion:
         self.screen = pygame.display.set_mode(
             (self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Alien Invasion")
+
+        self.ship = Ship(self)
 
         #Configura el color del fondo.
         #self.bg_color = (230, 230, 230)
@@ -29,6 +31,7 @@ class AlienInvasion:
 
             #Redibuja la pantalla en cada paso por le bucle
             self.screen.fill(self.settings.bg_color)
+            self.ship.blitme()
             
             #Hace visible la ultima pantalla dibujada.
             pygame.display.flip()
