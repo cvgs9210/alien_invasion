@@ -1,6 +1,6 @@
 import sys
-from time import sleep
 import pygame
+from bullet import Bullet
 
 from settings import Settings
 from ship import Ship
@@ -22,6 +22,7 @@ class AlienInvasion:
         pygame.display.set_caption("Alien Invasion")
 
         self.ship = Ship(self)
+        self.bullets = pygame.sprite.Group()
 
         #Configura el color del fondo.
         #self.bg_color = (230, 230, 230)
@@ -32,6 +33,7 @@ class AlienInvasion:
 
             self._check_events()
             self.ship.update()
+            self._update_bullets()
             self._update_screen()
 
     def _check_events(self):
@@ -53,6 +55,8 @@ class AlienInvasion:
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
             sys.exit()
+        elif event.key == pygame.K_SPACE:
+            self._fire_bullet()
 
     def _check_keyup_events(self, event):
         """Responde a las liberaciones de las teclas"""
@@ -61,13 +65,31 @@ class AlienInvasion:
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = False
 
+    def _fire_bullet(self):
+        """Crea una bala nueva y la añade al grupo de balas"""
+        if len(self.bullets) < self.settings.bullets_allowed:
+            new_bullet = Bullet(self)
+            self.bullets.add(new_bullet)
+
     def _update_screen(self):
         #Redibuja la pantalla en cada paso por le bucle
         self.screen.fill(self.settings.bg_color)
         self.ship.blitme()
-        
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet()
         #Hace visible la ultima pantalla dibujada.
         pygame.display.flip()
+
+    def _update_bullets(self):
+        """Actualiza la posicion de las balas y se deshace de las viejas"""
+        # Actualiza las posiciones de la balas.
+        self.bullets.update()
+
+        # Se deshace de las blas que han desaparecido
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
+        #print(len(self.bullets))
 
 if __name__ == '__main__':
     #Hace una instancia del juego y lo ejecuta.
