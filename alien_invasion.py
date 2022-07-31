@@ -1,6 +1,7 @@
 import sys
 import pygame
 from bullet import Bullet
+from alien import Alien
 
 from settings import Settings
 from ship import Ship
@@ -23,6 +24,9 @@ class AlienInvasion:
 
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+
+        self._create_fleet()
 
         #Configura el color del fondo.
         #self.bg_color = (230, 230, 230)
@@ -34,6 +38,7 @@ class AlienInvasion:
             self._check_events()
             self.ship.update()
             self._update_bullets()
+            self._update_aliens()
             self._update_screen()
 
     def _check_events(self):
@@ -71,12 +76,54 @@ class AlienInvasion:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
 
+    def _create_fleet(self):
+        """Crea la flota de aliens."""
+        # Hace un alien y halla el número de aliens en una fila.
+        # El esapcio entre aliens es igual a la anchura de un alien.
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        available_space_x = self.settings.screen_width - (2 * alien_width)
+        number_aliens_x = available_space_x // (2* alien_width)
+
+        # Determina el numero de filas de aliens que caben en la pantalla.
+        ship_height = self.ship.rect.height
+        available_space_y =  (self.settings.screen_height - (3* alien_height) - ship_height)
+        number_rows = available_space_y // (2 * alien_height)
+        # Crea la flota completa de aliens.
+        for row_number in range(number_rows):
+            # Crea la primera fila de alien 
+            for alien_number in range(number_aliens_x):
+                self._create_alien(alien_number, row_number)
+    
+    def _check_fleet_edges(self):
+        """Responde adecuadamente si algun alien ha llegado a un borde."""
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self._change_fleet_direction()
+                break
+    
+    def _change_fleet_direction(self):
+        """Baja toda la flota y cambia su direccion."""
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1
+
+    def _create_alien(self, alien_number, row_number):
+        # Crea un alien y lo coloca en la fila.
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        alien.x = alien_width + 2 * alien_width * alien_number
+        alien.rect.x = alien.x
+        alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
+        self.aliens.add(alien)
+
     def _update_screen(self):
         #Redibuja la pantalla en cada paso por le bucle
         self.screen.fill(self.settings.bg_color)
         self.ship.blitme()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+        self.aliens.draw(self.screen)
         #Hace visible la ultima pantalla dibujada.
         pygame.display.flip()
 
@@ -90,6 +137,30 @@ class AlienInvasion:
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
         #print(len(self.bullets))
+        self._check_bullet_alien_collisions()
+
+    def _check_bullet_alien_collisions(self):
+        """Responde a las colisiones bala-alien."""
+        # Retira todas las balas y aliens que han colisionado
+        # Si hay, se deshace de la bala y del alien.
+        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+        if not self.aliens:
+            # Destruye las balas existentes y crea una flota nueva
+            self.bullets.empty()
+            self._create_fleet()
+
+    def _update_aliens(self):
+        """
+        Comprueba si la flota esta en un borde,
+        despues actualiza las posiciones de todas las flotas.
+        """
+        self._check_fleet_edges()
+        """Actualiza las posiciones de todos los aliens de la flota."""
+        self.aliens.update()
+
+        # busca colisiones alien-nave.
+        if pygame.sprite.spritecollideany(self.ship, self.aliens):
+            print("Ship hit!!!")
 
 if __name__ == '__main__':
     #Hace una instancia del juego y lo ejecuta.
