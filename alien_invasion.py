@@ -1,6 +1,5 @@
 import sys
 from time import sleep
-from turtle import Screen
 
 import pygame
 
@@ -8,6 +7,7 @@ from bullet import Bullet
 from alien import Alien
 from settings import Settings
 from game_stats import GameStats
+from button import Button
 from ship import Ship
 
 class AlienInvasion:
@@ -38,6 +38,9 @@ class AlienInvasion:
         #Configura el color del fondo.
         #self.bg_color = (230, 230, 230)
 
+        # Hace el boton play.
+        self.play_button = Button(self, "Play")
+
     def run_game(self):
         """Inicia el bucle principal para el juego"""
         while True:
@@ -60,6 +63,30 @@ class AlienInvasion:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
+
+    def _star_game(self):
+        pygame.mouse.set_visible(False)
+        
+        # Restablece las estadisticas del juego
+        self.stats.reset_stats()
+        self.stats.game_active = True
+
+        # Se deshace de los aliens y balas restantes.
+        self.aliens.empty()
+        self.bullets.empty()
+
+        # Crea una flota nueva y centra la nave
+        self._create_fleet()
+        self.ship.center_ship()
+
+    def _check_play_button(self, mouse_pos):
+        """Inicia un juego nuevo cuando el jugador hace click en Pay."""
+        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        if button_clicked and not self.stats.game_active:
+            self._star_game()
     
     def _check_keydown_events(self, event):
         """Responde a pulsaciones de teclas"""
@@ -72,6 +99,8 @@ class AlienInvasion:
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
+        elif (event.key == pygame.K_j) and not self.stats.game_active:
+            self._star_game()
 
     def _check_keyup_events(self, event):
         """Responde a las liberaciones de las teclas"""
@@ -153,6 +182,11 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
+
+        # Dibuja el boton para jugar si el juego esta inactivo
+        if not self.stats.game_active:
+            self.play_button.draw_button()
+
         #Hace visible la ultima pantalla dibujada.
         pygame.display.flip()
 
@@ -204,6 +238,7 @@ class AlienInvasion:
             sleep(0.5)
         else:
             self.stats.game_active = False
+            pygame.mouse.set_visible(True)
 
 if __name__ == '__main__':
     #Hace una instancia del juego y lo ejecuta.
