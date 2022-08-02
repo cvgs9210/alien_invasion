@@ -12,7 +12,7 @@ class Settings:
         self.ship_limit = 3
 
         #Configuracion de las balas
-        self.bullet_width = 300
+        self.bullet_width = 3
         self.bullet_height = 15
         self.bullet_color = (60, 60 ,60)
         self.bullets_allowed = 3
@@ -25,6 +25,9 @@ class Settings:
 
         # Lo rapido que aumenta el valor en puntos de los aliens
         self.score_scale = 1.5
+        
+        # Carga el texto del high_score.txt
+        self.high_score_txt = 'high_score.txt'
 
         self.initializate_dynamic_settings()
     
