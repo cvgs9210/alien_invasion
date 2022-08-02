@@ -1,8 +1,17 @@
+import pygame
+
 class Settings:
     """Una clase para guardar toda la configuracion de alien invasion."""
 
     def __init__(self):
         """Inicializa la configuracion del juego"""
+        # Inicializa los sonidos
+        pygame.mixer.init()
+        self.bullet_sound = pygame.mixer.Sound('sounds/laser1.wav')
+        self.ship_sound = pygame.mixer.Sound('sounds/Explosion_01.wav')
+        self.alien_sound = pygame.mixer.Sound('sounds/Explosion_02.wav')
+        self.game_over_sound = pygame.mixer.Sound('sounds/game_over_02.wav')
+
         #Configuracion de la pantalla
         self.screen_width = 1200
         self.screen_height = 800
@@ -51,4 +60,3 @@ class Settings:
 
         self.alien_points = int(self.alien_points * self.score_scale)
         #print(self.alien_points)
-

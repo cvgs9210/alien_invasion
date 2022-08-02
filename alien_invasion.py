@@ -124,6 +124,7 @@ class AlienInvasion:
         if len(self.bullets) < self.settings.bullets_allowed:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
+            self.settings.bullet_sound.play()
 
     def _create_fleet(self):
         """Crea la flota de aliens."""
@@ -162,6 +163,7 @@ class AlienInvasion:
                 self.stats.score += self.settings.alien_points * len(aliens)
             self.sb.prep_score()
             self.sb.check_high_score()
+            self.settings.alien_sound.play()
 
         if not self.aliens:
             # Destruye las balas existentes y crea una flota nueva
@@ -259,11 +261,13 @@ class AlienInvasion:
             # Crea una flota nueva y centra la nave
             self._create_fleet()
             self.ship.center_ship()
+            self.settings.ship_sound.play()
 
             # Pausa
             sleep(0.5)
         else:
             self.stats.game_active = False
+            self.settings.game_over_sound.play()
             pygame.mouse.set_visible(True)
 
 if __name__ == '__main__':
